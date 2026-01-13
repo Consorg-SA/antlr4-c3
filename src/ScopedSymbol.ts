@@ -157,10 +157,10 @@ export interface IScopedSymbol extends BaseSymbol {
 export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
 
     /** All child symbols in definition order. */
-    #children: BaseSymbol[] = [];
+    private _children: BaseSymbol[] = [];
 
     // All used child names. Used to detect name collisions.
-    #names = new Map<string, number>();
+    private _names = new Map<string, number>();
 
     public constructor(name = "") {
         super(name);
@@ -174,28 +174,28 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
     }
 
     public get children(): BaseSymbol[] {
-        return this.#children;
+        return this._children;
     }
 
     public get firstChild(): BaseSymbol | undefined {
-        if (this.#children.length > 0) {
-            return this.#children[0];
+        if (this._children.length > 0) {
+            return this._children[0];
         }
 
         return undefined;
     }
 
     public get lastChild(): BaseSymbol | undefined {
-        if (this.#children.length > 0) {
-            return this.#children[this.#children.length - 1];
+        if (this._children.length > 0) {
+            return this._children[this._children.length - 1];
         }
 
         return undefined;
     }
 
     public clear(): void {
-        this.#children = [];
-        this.#names.clear();
+        this._children = [];
+        this._names.clear();
     }
 
     /**
@@ -209,40 +209,40 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
 
         // Check for duplicates first.
         const symbolTable = this.symbolTable;
-        const count = this.#names.get(symbol.name);
+        const count = this._names.get(symbol.name);
         if (!symbolTable || !symbolTable.options.allowDuplicateSymbols) {
             if (count !== undefined) {
                 throw new DuplicateSymbolError("Attempt to add duplicate symbol '" + (symbol.name ?? "<anonymous>") +
                     "'");
             } else {
-                this.#names.set(symbol.name, 1);
+                this._names.set(symbol.name, 1);
             }
 
-            const index = this.#children.indexOf(symbol);
+            const index = this._children.indexOf(symbol);
             if (index > -1) {
                 throw new DuplicateSymbolError("Attempt to add duplicate symbol '" + (symbol.name ?? "<anonymous>") +
                     "'");
             }
         } else {
-            this.#names.set(symbol.name, count === undefined ? 1 : count + 1);
+            this._names.set(symbol.name, count === undefined ? 1 : count + 1);
         }
 
-        this.#children.push(symbol);
+        this._children.push(symbol);
         symbol.setParent(this);
     }
 
     public removeSymbol(symbol: BaseSymbol): void {
-        const index = this.#children.indexOf(symbol);
+        const index = this._children.indexOf(symbol);
         if (index > -1) {
-            this.#children.splice(index, 1);
+            this._children.splice(index, 1);
             symbol.setParent(undefined);
 
-            const count = this.#names.get(symbol.name);
+            const count = this._names.get(symbol.name);
             if (count !== undefined) {
                 if (count === 1) {
-                    this.#names.delete(symbol.name);
+                    this._names.delete(symbol.name);
                 } else {
-                    this.#names.set(symbol.name, count - 1);
+                    this._names.set(symbol.name, count - 1);
                 }
             }
         }
@@ -260,7 +260,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
         const result: T[] = [];
 
         const childPromises: Array<Promise<T[]>> = [];
-        this.#children.forEach((child) => {
+        this._children.forEach((child) => {
             if (child instanceof t) {
                 result.push(child);
             }
@@ -288,7 +288,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
         t: SymbolConstructor<T, Args>): T[] {
         const result: T[] = [];
 
-        this.#children.forEach((child) => {
+        this._children.forEach((child) => {
             if (child instanceof t) {
                 result.push(child);
             }
@@ -310,7 +310,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
         const result: BaseSymbol[] = [];
 
         const childPromises: Array<Promise<BaseSymbol[]>> = [];
-        this.#children.forEach((child) => {
+        this._children.forEach((child) => {
             if (!name || child.name === name) {
                 result.push(child);
             }
@@ -335,7 +335,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
     public getAllNestedSymbolsSync(name?: string): BaseSymbol[] {
         const result: BaseSymbol[] = [];
 
-        this.#children.forEach((child) => {
+        this._children.forEach((child) => {
             if (!name || child.name === name) {
                 result.push(child);
             }
@@ -356,7 +356,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
     public getSymbolsOfType<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>): Promise<T[]> {
         return new Promise((resolve) => {
             const result: T[] = [];
-            this.#children.forEach((child) => {
+            this._children.forEach((child) => {
                 if (child instanceof t) {
                     result.push(child);
                 }
@@ -382,7 +382,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
 
         // Special handling for namespaces, which act like grouping symbols in this scope,
         // so we show them as available in this scope.
-        for (const child of this.#children) {
+        for (const child of this._children) {
             if (child instanceof t) {
                 result.push(child);
             }
@@ -419,7 +419,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
 
         // Special handling for namespaces, which act like grouping symbols in this scope,
         // so we show them as available in this scope.
-        for (const child of this.#children) {
+        for (const child of this._children) {
             if (child instanceof t) {
                 result.push(child);
             }
@@ -448,9 +448,9 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
      * @returns A promise resolving to the first symbol with a given name, in the order of appearance in this scope
      *          or any of the parent scopes (conditionally).
      */
-    public override async resolve(name: string, localOnly = false): Promise<BaseSymbol | undefined> {
+    public /*override*/ async resolve(name: string, localOnly = false): Promise<BaseSymbol | undefined> {
         return new Promise((resolve) => {
-            for (const child of this.#children) {
+            for (const child of this._children) {
                 if (child.name === name) {
                     resolve(child);
 
@@ -479,8 +479,8 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
      * @returns the first symbol with a given name, in the order of appearance in this scope
      *          or any of the parent scopes (conditionally).
      */
-    public override resolveSync(name: string, localOnly = false): BaseSymbol | undefined {
-        for (const child of this.#children) {
+    public /*override*/ resolveSync(name: string, localOnly = false): BaseSymbol | undefined {
+        for (const child of this._children) {
             if (child.name === name) {
                 return child;
             }
@@ -536,7 +536,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
      * @returns the index of the given child symbol in the child list or -1 if it couldn't be found.
      */
     public indexOfChild(child: BaseSymbol): number {
-        return this.#children.findIndex((value: BaseSymbol) => { return value === child; });
+        return this._children.findIndex((value: BaseSymbol) => { return value === child; });
     }
 
     /**
@@ -546,11 +546,11 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
      */
     public nextSiblingOf(child: BaseSymbol): BaseSymbol | undefined {
         const index = this.indexOfChild(child);
-        if (index === -1 || index >= this.#children.length - 1) {
+        if (index === -1 || index >= this._children.length - 1) {
             return undefined;
         }
 
-        return this.#children[index + 1];
+        return this._children[index + 1];
     }
 
     /**
@@ -564,7 +564,7 @@ export class ScopedSymbol extends BaseSymbol implements IScopedSymbol {
             return undefined;
         }
 
-        return this.#children[index - 1];
+        return this._children[index - 1];
     }
 
     /**

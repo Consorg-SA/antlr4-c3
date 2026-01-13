@@ -3,10 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { type ParseTree } from "antlr4ng";
+import type { ParseTree } from "antlr4ng";
 
-import { type IScopedSymbol } from "./ScopedSymbol.js";
-import { type ISymbolTable } from "./SymbolTable.js";
+import type { IScopedSymbol } from "./ScopedSymbol.js";
+import type { ISymbolTable } from "./SymbolTable.js";
 
 import { MemberVisibility, Modifier } from "./types.js";
 
@@ -26,62 +26,62 @@ export class BaseSymbol {
     public readonly modifiers = new Set<Modifier>();
     public visibility = MemberVisibility.Unknown;
 
-    #parent?: IScopedSymbol;
+    private _parent?: IScopedSymbol;
 
     public constructor(name = "") {
         this.name = name;
     }
 
     public get parent(): IScopedSymbol | undefined {
-        return this.#parent;
+        return this._parent;
     }
 
     public get firstSibling(): BaseSymbol | undefined {
-        if (!this.#parent) {
+        if (!this._parent) {
             return undefined;
         }
 
-        return this.#parent?.firstChild;
+        return this._parent?.firstChild;
     }
 
     /**
      * @returns the symbol before this symbol in its scope.
      */
     public get previousSibling(): BaseSymbol | undefined {
-        if (!this.#parent) {
+        if (!this._parent) {
             return undefined;
         }
 
-        if (!this.#parent) {
+        if (!this._parent) {
             return this;
         }
 
-        return this.#parent.previousSiblingOf(this);
+        return this._parent.previousSiblingOf(this);
     }
 
     /**
      * @returns the symbol following this symbol in its scope.
      */
     public get nextSibling(): BaseSymbol | undefined {
-        return this.#parent?.nextSiblingOf(this);
+        return this._parent?.nextSiblingOf(this);
     }
 
     public get lastSibling(): BaseSymbol | undefined {
-        return this.#parent?.lastChild;
+        return this._parent?.lastChild;
     }
 
     /**
      * @returns the next symbol in definition order, regardless of the scope.
      */
     public get next(): BaseSymbol | undefined {
-        return this.#parent?.nextOf(this);
+        return this._parent?.nextOf(this);
     }
 
     /**
      * @returns the outermost entity (below the symbol table) that holds us.
      */
     public get root(): BaseSymbol | undefined {
-        let run = this.#parent;
+        let run = this._parent;
         while (run) {
             if (!run.parent || this.isSymbolTable(run.parent)) {
                 return run;
@@ -100,7 +100,7 @@ export class BaseSymbol {
             return this;
         }
 
-        let run = this.#parent;
+        let run = this._parent;
         while (run) {
             if (this.isSymbolTable(run)) {
                 return run;
@@ -136,15 +136,15 @@ export class BaseSymbol {
      * @param parent The new parent to use.
      */
     public setParent(parent?: IScopedSymbol): void {
-        this.#parent = parent;
+        this._parent = parent;
     }
 
     /**
      * Remove this symbol from its parent scope.
      */
     public removeFromParent(): void {
-        this.#parent?.removeSymbol(this);
-        this.#parent = undefined;
+        this._parent?.removeSymbol(this);
+        this._parent = undefined;
     }
 
     /**
@@ -158,7 +158,7 @@ export class BaseSymbol {
      *          or any of the parent scopes (conditionally).
      */
     public async resolve(name: string, localOnly = false): Promise<BaseSymbol | undefined> {
-        return this.#parent?.resolve(name, localOnly);
+        return this._parent?.resolve(name, localOnly);
     }
 
     /**
@@ -172,7 +172,7 @@ export class BaseSymbol {
      *          or any of the parent scopes (conditionally).
      */
     public resolveSync(name: string, localOnly = false): BaseSymbol | undefined {
-        return this.#parent?.resolveSync(name, localOnly);
+        return this._parent?.resolveSync(name, localOnly);
     }
 
     /**
@@ -181,7 +181,7 @@ export class BaseSymbol {
      * @returns the next enclosing parent of the given type.
      */
     public getParentOfType<T extends BaseSymbol>(t: SymbolConstructor<T, unknown[]>): T | undefined {
-        let run = this.#parent;
+        let run = this._parent;
         while (run) {
             if (run instanceof t) {
                 return run;
@@ -208,7 +208,7 @@ export class BaseSymbol {
         }
 
         let result: string = this.name.length === 0 ? "<anonymous>" : this.name;
-        let run = this.#parent;
+        let run = this._parent;
         while (run) {
             if (includeAnonymous || run.name.length > 0) {
                 result = (run.name.length === 0 ? "<anonymous>" : run.name) + separator + result;

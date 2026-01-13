@@ -132,7 +132,7 @@ export class SymbolTable extends ScopedSymbol implements ISymbolTable {
         };
     }
 
-    public override clear(): void {
+    public /*override*/ clear(): void {
         super.clear();
         this.dependencies.clear();
     }
@@ -197,7 +197,7 @@ export class SymbolTable extends ScopedSymbol implements ISymbolTable {
         return this.addNewSymbolOfType(NamespaceSymbol, currentParent, parts[parts.length - 1]);
     }
 
-    public override async getAllSymbols<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>,
+    public /*override*/ async getAllSymbols<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>,
         localOnly = false): Promise<T[]> {
         const result: T[] = await super.getAllSymbols(t, localOnly);
 
@@ -216,7 +216,7 @@ export class SymbolTable extends ScopedSymbol implements ISymbolTable {
         return result;
     }
 
-    public override getAllSymbolsSync<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>,
+    public /*override*/ getAllSymbolsSync<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>,
         localOnly = false): T[] {
         const result: T[] = super.getAllSymbolsSync(t, localOnly);
 
@@ -321,7 +321,7 @@ export class SymbolTable extends ScopedSymbol implements ISymbolTable {
         return undefined;
     }
 
-    public override async resolve(name: string, localOnly = false): Promise<BaseSymbol | undefined> {
+    public /*override*/ async resolve(name: string, localOnly = false): Promise<BaseSymbol | undefined> {
         let result = await super.resolve(name, localOnly);
         if (!result && !localOnly) {
             for (const dependency of this.dependencies) {
@@ -335,7 +335,7 @@ export class SymbolTable extends ScopedSymbol implements ISymbolTable {
         return result;
     }
 
-    public override resolveSync(name: string, localOnly = false): BaseSymbol | undefined {
+    public /*override*/ resolveSync(name: string, localOnly = false): BaseSymbol | undefined {
         let result = super.resolveSync(name, localOnly);
         if (!result && !localOnly) {
             for (const dependency of this.dependencies) {
