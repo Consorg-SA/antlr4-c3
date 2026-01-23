@@ -7,7 +7,7 @@ Thumbs.db
 .DS_Store
 
 # Ignored files
-src/
+/src/
 lib/*.map
 tests/
 ports/

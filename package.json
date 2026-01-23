@@ -28,7 +28,10 @@
         "eslint": "eslint .",
         "build-mjs": "npm run build-bundle -- --outfile=lib/index.esm.js --format=esm",
         "build-cjs": "npm run build-bundle -- --outfile=lib/index.cjs --format=cjs",
-        "build-bundle": "esbuild ./index.ts --bundle --main-fields=module,main --target=es2020 --packages=external --keep-names"
+        "build-bundle": "esbuild ./index.ts --bundle --main-fields=module,main --target=es2020 --packages=external --keep-names",
+        "publish-to-npm": "npm publish . --access=public",
+        "test-publish-to-npm": "npm publish . --access=public --dry-run",
+        "test-npm-pack": "npm pack --dry-run"
     },
     "devDependencies": {
         "@eslint/js": "9.21.0",
