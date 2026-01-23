@@ -17,7 +17,7 @@
     ],
     "type": "module",
     "main": "./lib/index.cjs",
-    "module": "./lib/index.mjs",
+    "module": "./lib/index.esm.js",
     "types": "./lib/index.d.ts",
     "scripts": {
         "build": "tsc && npm run build-cjs && npm run build-mjs",
@@ -26,7 +26,7 @@
         "test": "vitest run --no-watch --no-coverage",
         "generate": "antlr-ng -Dlanguage=TypeScript tests/CPP14.g4 tests/Expr.g4 tests/Whitebox.g4 -l false -o tests/generated --exact-output-dir",
         "eslint": "eslint .",
-        "build-mjs": "npm run build-bundle -- --outfile=lib/index.mjs --format=esm",
+        "build-mjs": "npm run build-bundle -- --outfile=lib/index.esm.js --format=esm",
         "build-cjs": "npm run build-bundle -- --outfile=lib/index.cjs --format=cjs",
         "build-bundle": "esbuild ./index.ts --bundle --main-fields=module,main --target=esnext --packages=external --keep-names"
     },
