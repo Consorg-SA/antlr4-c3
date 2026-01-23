@@ -28,7 +28,7 @@
         "eslint": "eslint .",
         "build-mjs": "npm run build-bundle -- --outfile=lib/index.esm.js --format=esm",
         "build-cjs": "npm run build-bundle -- --outfile=lib/index.cjs --format=cjs",
-        "build-bundle": "esbuild ./index.ts --bundle --main-fields=module,main --target=esnext --packages=external --keep-names"
+        "build-bundle": "esbuild ./index.ts --bundle --main-fields=module,main --target=es2020 --packages=external --keep-names"
     },
     "devDependencies": {
         "@eslint/js": "9.21.0",
