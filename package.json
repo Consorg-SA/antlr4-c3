@@ -1,6 +1,6 @@
 {
     "name": "@consorg/antlr4-c3",
-    "version": "3.4.3",
+    "version": "3.4.3-fork.0",
     "description": "A code completion core implementation for ANTLR4 based parsers",
     "author": "Mike Lischke",
     "license": "MIT",
